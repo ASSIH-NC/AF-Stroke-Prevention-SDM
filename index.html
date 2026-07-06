@@ -12,6 +12,9 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <!-- Tailwind CSS for Modern Interface Styling -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PDF Generation Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -48,6 +51,21 @@
   <script type="text/babel">
     // Destructure React hooks to make sure calls like useState and useMemo are fully defined
     const { useState, useMemo } = React;
+
+    // Helper for PDF Export
+    const exportToPDF = (elementId, filename) => {
+      const { jsPDF } = window.jspdf;
+      const element = document.getElementById(elementId);
+      
+      html2canvas(element, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`${filename}.pdf`);
+      });
+    };
 
     // Inline SVG Icon Helper Components for Zero-dependency, Fast Loading
     const HeartIcon = () => (
@@ -1115,10 +1133,16 @@
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => window.print()}
+                      onClick={() => exportToPDF('print-area-patient', 'Patient_Summary')}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
                     >
-                      <PrintIcon /> Print Document
+                      <DocIcon /> Export PDF
+                    </button>
+                    <button 
+                      onClick={() => window.print()}
+                      className="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
+                    >
+                      <PrintIcon /> Print
                     </button>
                     <button 
                       onClick={() => setShowPatientSummary(false)}
@@ -1277,10 +1301,16 @@
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => window.print()}
+                      onClick={() => exportToPDF('print-area-physician', 'Physician_Report')}
                       className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
                     >
-                      <PrintIcon /> Print Report
+                      <DocIcon /> Export PDF
+                    </button>
+                    <button 
+                      onClick={() => window.print()}
+                      className="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
+                    >
+                      <PrintIcon /> Print
                     </button>
                     <button 
                       onClick={() => setShowPhysicianReport(false)}
