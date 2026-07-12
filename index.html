@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AF Stroke Prevention — Shared Decision-Making Pathway</title>
+  
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel for Live JSX Parsing in Browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Tailwind CSS for Modern Interface Styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Updated Print CSS to capture modals */
+    @media print {
+      body * { visibility: hidden; }
+      .fixed, .fixed * { visibility: visible; }
+      .fixed { position: static !important; inset: 0 !important; background: white !important; }
+      .print-hide, button, header, nav { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased pb-20">
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // Destructure React hooks to make sure calls like useState and useMemo are fully defined
+    const { useState, useMemo } = React;
+
+    // Inline SVG Icon Helper Components for Zero-dependency, Fast Loading
+    const HeartIcon = () => (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    );
+
+    const ShieldIcon = ({ className = "h-5 w-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    );
+
+    const AlertIcon = ({ className = "h-5 w-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    );
+
+    const CheckIcon = ({ className = "h-4 w-4" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    );
+
+    const DocIcon = ({ className = "h-5 w-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    );
+
+    const PrintIcon = () => (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+      </svg>
+    );
+
+    const RefreshIcon = () => (
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.2" />
+      </svg>
+    );
+
+    const UserIcon = ({ className = "h-5 w-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    );
+
+    const ArrowRightIcon = () => (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+      </svg>
+    );
+
+    const ChevronDownIcon = () => (
+      <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+
+    const ChevronUpIcon = () => (
+      <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+      </svg>
+    );
+
+    const CloseIcon = () => (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    );
+
+    // Clinical Parameters Matrix Configuration
+    const CHA2DS2_VA_ITEMS = [
+      { id: 'c', letter: 'C', label: 'Heart failure / LV dysfunction', sublabel: 'Moderate-to-severe LV dysfunction or clinical HF', points: 1 },
+      { id: 'h', letter: 'H', label: 'Hypertension', sublabel: 'On medication or SBP > 140 mmHg', points: 1 },
+      { id: 'a2', letter: 'A₂', label: 'Age ≥ 75 years', points: 2 },
+      { id: 'd', letter: 'D', label: 'Diabetes mellitus', sublabel: 'Type 1 or Type 2 on treatment', points: 1 },
+      { id: 's2', letter: 'S₂', label: 'Stroke / TIA / systemic embolism', sublabel: 'Prior history of thromboembolic event', points: 2 },
+      { id: 'v', letter: 'V', label: 'Vascular disease', sublabel: 'Prior MI, peripheral artery disease, or aortic plaque', points: 1 },
+      { id: 'a', letter: 'A', label: 'Age 65–74 years', points: 1 },
+    ];
+
+    const HAS_BLED_ITEMS = [
+      { id: 'h', letter: 'H', label: 'Hypertension', sublabel: 'Uncontrolled SBP > 160 mmHg', points: 1 },
+      { id: 'a1', letter: 'A', label: 'Abnormal renal function', sublabel: 'Dialysis, transplant, or Cr < 15 ml/min', points: 1 },
+      { id: 'a2', letter: 'A', label: 'Abnormal liver function', sublabel: 'Cirrhosis or LFTs > 3x ULN', points: 1 },
+      { id: 's', letter: 'S', label: 'Stroke history', sublabel: 'Previous ischemic or haemorrhagic stroke', points: 1 },
+      { id: 'b', letter: 'B', label: 'Bleeding history', sublabel: 'Prior major bleed or predisposition', points: 1 },
+      { id: 'l', letter: 'L', label: 'Labile INR', sublabel: 'Unstable INR, TTR < 60% on VKA', points: 1 },
+      { id: 'e', letter: 'E', label: 'Elderly > 65', sublabel: 'Age over 65 years', points: 1 },
+      { id: 'd1', letter: 'D', label: 'Drugs', sublabel: 'Antiplatelets or NSAIDs', points: 1 },
+      { id: 'd2', letter: 'D', label: 'Alcohol excess', sublabel: '≥ 8 drinks per week', points: 1 },
+    ];
+
+    const SPECIAL_CONDITIONS = [
+      { id: 'valve', label: 'Mechanical heart valve', alert: 'Warfarin only — NOAC contraindicated' },
+      { id: 'ms', label: 'Moderate/severe rheumatic mitral stenosis', alert: 'Warfarin preferred' },
+      { id: 'hcm', label: 'Hypertrophic cardiomyopathy (HCM)', alert: 'OAC regardless of score' },
+      { id: 'amyloid', label: 'Cardiac amyloidosis', alert: 'OAC regardless of score' },
+      { id: 'thrombus', label: 'LA / LAA thrombus', alert: 'Anticoagulation required' },
+      { id: 'congenital', label: 'High-risk adult congenital heart disease', alert: 'Consider OAC' },
+      { id: 'pregnancy', label: 'Pregnancy with elevated thromboembolic risk', alert: 'Special anticoagulation pathway' },
+      { id: 'antiplatelet', label: 'Antiplatelet + Anticoagulant Combination', alert: 'DOAC preferred to reduce bleeding risk (Class I, Level A)' },
+    ];
+
+    const MODIFIABLE_BLEEDING_RISKS = [
+      { label: 'Control BP to < 140/90 mmHg' },
+      { label: 'Stop NSAIDs / unnecessary antiplatelets' },
+      { label: 'Improve INR control (target TTR ≥ 70%)' },
+      { label: 'Review drug interactions' },
+      { label: 'Address renal / liver dysfunction' },
+      { label: 'Improve adherence' },
+    ];
+
+    const PATIENT_PRIORITIES = [
+      { id: 'no_blood_tests', text: 'I want no blood tests', sub: 'NOAC if eligible', color: 'bg-emerald-50 border-emerald-200 text-emerald-900 ring-emerald-500' },
+      { id: 'monitoring', text: 'I prefer monitoring', sub: 'Warfarin may fit', color: 'bg-blue-50 border-blue-200 text-blue-900 ring-blue-500' },
+      { id: 'major_bleeding', text: 'I had major bleeding', sub: 'Evaluate LAAO pathway', color: 'bg-purple-50 border-purple-200 text-purple-900 ring-purple-500' },
+      { id: 'fear_stroke', text: 'I fear stroke most', sub: 'Discuss anticoagulation benefit', color: 'bg-rose-50 border-rose-200 text-rose-900 ring-rose-500' },
+      { id: 'fear_bleeding', text: 'I fear bleeding most', sub: 'Modify risks + safest option', color: 'bg-orange-50 border-orange-200 text-orange-900 ring-orange-500' },
+      { id: 'travel', text: 'I travel frequently', sub: 'NOAC — no INR monitoring', color: 'bg-cyan-50 border-cyan-200 text-cyan-900 ring-cyan-500' },
+    ];
+
+    // Main React Application Code
+    function App() {
+      // Helper function to set dynamic title and print
+      const triggerPrint = (reportName) => {
+        const originalTitle = document.title;
+        document.title = `${patientName || 'Patient'}_AF_Tool`;
+        window.print();
+        document.title = originalTitle;
+      };
+
+      const [activeTab, setActiveTab] = useState('stroke');
+
+      // Clinical Identity Card - Empty by default
+      const [patientName, setPatientName] = useState('');
+      const [mrn, setMrn] = useState('');
+      const [consultantName, setConsultantName] = useState('');
+      const [age, setAge] = useState('');
+      const [sex, setSex] = useState('');
+
+      // Selected clinical variables state hooks
+      const [selectedCha, setSelectedCha] = useState([]);
+      const [selectedHas, setSelectedHas] = useState([]);
+      const [selectedSpecials, setSelectedSpecials] = useState([]);
+      const [selectedPriority, setSelectedPriority] = useState(null);
+
+      // Anticoagulant selected configuration
+      const [selectedTreatmentType, setSelectedTreatmentType] = useState('none');
+      const [selectedNoacDrug, setSelectedNoacDrug] = useState('Apixaban');
+      const [selectedRenalCheck, setSelectedRenalCheck] = useState('standard');
+
+      // Dropdown Accordion States
+      const [isSpecialsOpen, setIsSpecialsOpen] = useState(true);
+      const [isModifiableOpen, setIsModifiableOpen] = useState(true);
+      const [isRenalAccordionOpen, setIsRenalAccordionOpen] = useState(true);
+
+      // Printable reports status
+      const [showPatientSummary, setShowPatientSummary] = useState(false);
+      const [showPhysicianReport, setShowPhysicianReport] = useState(false);
+
+      const chaScore = useMemo(() => {
+        let score = 0;
+        CHA2DS2_VA_ITEMS.forEach(item => {
+          if (selectedCha.includes(item.id)) {
+            score += item.points;
+          }
+        });
+        return score;
+      }, [selectedCha]);
+
+      const hasScore = useMemo(() => {
+        let score = 0;
+        HAS_BLED_ITEMS.forEach(item => {
+          if (selectedHas.includes(item.id)) {
+            score += item.points;
+          }
+        });
+        return score;
+      }, [selectedHas]);
+
+      const recommendations = useMemo(() => {
+        const hasSpecial = selectedSpecials.length > 0;
+        
+        if (hasSpecial) {
+          if (selectedSpecials.includes('valve')) {
+            return {
+              strategy: 'Oral Anticoagulation (Warfarin)',
+              badgeColor: 'bg-red-500 text-white',
+              text: 'Mechanical heart valve detected. NOACs/DOACs are contraindicated. Therapeutic Warfarin (VKA) target INR 2.5 (2.0-3.0 range) is required.',
+              type: 'warfarin'
+            };
+          }
+          if (selectedSpecials.includes('ms')) {
+            return {
+              strategy: 'Oral Anticoagulation (Warfarin Preferred)',
+              badgeColor: 'bg-amber-500 text-white',
+              text: 'Moderate-to-severe Rheumatic Mitral Stenosis detected. Warfarin is the indicated therapeutic pathway.',
+              type: 'warfarin'
+            };
+          }
+          if (selectedSpecials.includes('thrombus')) {
+            return {
+              strategy: 'Systemic Anticoagulation Indicated',
+              badgeColor: 'bg-indigo-500 text-white',
+              text: 'Left Atrial / LAA Thrombus detected. Systemic oral anticoagulation is indicated.',
+              type: 'noac'
+            };
+          }
+          return {
+            strategy: 'Oral Anticoagulation Recommended (Clinical Override)',
+            badgeColor: 'bg-indigo-500 text-white',
+            text: 'Patient exhibits high-risk override conditions. Anticoagulation is indicated regardless of standard calculated score.',
+            type: 'noac'
+          };
+        }
+
+        if (chaScore === 0) {
+          return {
+            strategy: 'No Routine Anticoagulation',
+            badgeColor: 'bg-emerald-500 text-white',
+            text: 'Low thromboembolic risk (CHA₂DS₂-VA = 0). Benefits do not outweigh bleeding risks. Reassess annually.',
+            type: 'none'
+          };
+        } else if (chaScore === 1) {
+          return {
+            strategy: 'Oral Anticoagulation Should Be Considered (Class IIa)',
+            badgeColor: 'bg-blue-500 text-white',
+            text: 'Intermediate thromboembolic risk (CHA₂DS₂-VA = 1). Prioritize clinical risk profile and patient preference values.',
+            type: 'noac'
+          };
+        } else {
+          return {
+            strategy: 'Oral Anticoagulation Strongly Indicated (Class I)',
+            badgeColor: 'bg-red-500 text-white',
+            text: 'Elevated stroke risk (CHA₂DS₂-VA ≥ 2). Systemic oral anticoagulation (DOAC preferred) is recommended to optimize protection.',
+            type: 'noac'
+          };
+        }
+      }, [chaScore, selectedSpecials]);
+
+      // Dynamic Medical Clinical Rationale Generator
+      const computedClinicalRationale = useMemo(() => {
+        if (selectedTreatmentType === 'none') {
+          return `Low-risk stroke profile (CHA₂DS₂-VA = ${chaScore}) with no override indicators. Systemic oral anticoagulation is not indicated. Routine annual review scheduled.`;
+        }
+        
+        let base = '';
+        if (selectedSpecials.length > 0) {
+          const conditionNames = selectedSpecials.map(s => SPECIAL_CONDITIONS.find(sc => sc.id === s)?.label).join(', ');
+          base = `Oral anticoagulation indicated due to high-risk override criteria (${conditionNames}), bypassing standard numerical thresholds. `;
+        } else {
+          base = `Oral anticoagulation therapy indicated due to elevated thromboembolic stroke risk with a sex-neutral CHA₂DS₂-VA score of ${chaScore}. `;
+        }
+
+        const bleedRiskText = hasScore >= 3 
+          ? `High bleeding risk identified (HAS-BLED = ${hasScore}). Standard strategy is to target and treat modifiable bleeding parameters rather than withholding stroke protection.`
+          : `Acceptable bleeding risk profile (HAS-BLED = ${hasScore}).`;
+
+        let choiceDetail = '';
+        if (selectedTreatmentType === 'noac') {
+          let renalLabel = 'Standard Dose';
+          if (selectedRenalCheck === 'adjust') renalLabel = 'Dose adjusted based on CrCl 15-49';
+          if (selectedRenalCheck === 'contraindicated') renalLabel = 'Contraindicated / Specialist VKA management recommended';
+          
+          choiceDetail = ` Prescribed ${selectedNoacDrug} guided by active Renal Check status: ${renalLabel}. This selection addresses the patient's key preference of avoiding regular blood checks and aligns with clinical guidelines.`;
+        } else if (selectedTreatmentType === 'warfarin') {
+          choiceDetail = ` Prescribed Vitamin K Antagonist (Warfarin) due to specific absolute clinical indications. Planned frequent INR monitoring to maintain therapeutic target of 2.0-3.0.`;
+        } else if (selectedTreatmentType === 'laao') {
+          choiceDetail = ` Referred for Left Atrial Appendage Occlusion (LAAO) evaluation due to persistent bleeding challenges on anticoagulation therapy or severe absolute constraints.`;
+        }
+
+        return `${base}${bleedRiskText}${choiceDetail}`;
+      }, [selectedTreatmentType, selectedNoacDrug, selectedRenalCheck, selectedSpecials, chaScore, hasScore]);
+
+      const toggleCha = (id) => {
+        setSelectedCha(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+      };
+      const toggleHas = (id) => {
+        setSelectedHas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+      };
+      const toggleSpecial = (id) => {
+        setSelectedSpecials(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+      };
+      const handlePrioritySelect = (id) => {
+        setSelectedPriority(prev => prev === id ? null : id);
+      };
+
+      // NEW: Calculate Recommended Treatment Type based on guidelines and preference
+      const recommendedType = useMemo(() => {
+        if (selectedSpecials.includes('valve') || selectedSpecials.includes('ms')) return 'warfarin';
+        if (selectedPriority === 'no_blood_tests' || selectedPriority === 'travel') return 'noac';
+        if (selectedPriority === 'monitoring') return 'warfarin';
+        if (selectedPriority === 'major_bleeding') return 'laao';
+        if (chaScore >= 2) return 'noac';
+        return 'noac'; 
+      }, [selectedSpecials, selectedPriority, chaScore]);
+
+      const resetAll = () => {
+        setSelectedCha([]);
+        setSelectedHas([]);
+        setSelectedSpecials([]);
+        setSelectedPriority(null);
+        setSelectedTreatmentType('none');
+        setSelectedRenalCheck('standard');
+        setPatientName('');
+        setMrn('');
+        setAge('');
+        setSex('');
+        setConsultantName('');
+        setActiveTab('stroke');
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased pb-20 print:pb-0">
+          
+          {/* Header Branding Section */}
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm print:hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-600 text-white p-2.5 rounded-xl shadow-md">
+                  <HeartIcon />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600">As-Salam International Hospital</span>
+                    <span className="text-xs text-slate-400 font-semibold">• Cardiology Department</span>
+                  </div>
+                  <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    AF Stroke Prevention — Shared Decision-Making Pathway
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5 font-medium">ESC 2024 Guideline-Based Clinical Decision Support</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200">
+                  ESC AF 2024
+                </span>
+                <button 
+                  onClick={resetAll}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 transition flex items-center gap-1"
+                >
+                  <RefreshIcon /> New Patient
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Navigation Tab Panel */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 print:hidden">
+            <div className="bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm flex flex-wrap md:flex-nowrap gap-1">
+              {['stroke', 'bleeding', 'strategy', 'documentation'].map((tab, idx) => {
+                const labels = ['Stroke Risk', 'Bleeding Safety', 'Treatment Strategy', 'Documentation Summary'];
+                const isActive = activeTab === tab;
+                return (
+                  <button 
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex-1 py-2 px-4 rounded-xl font-semibold text-xs md:text-sm transition flex items-center justify-center gap-2 ${
+                      isActive ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isActive ? 'bg-white text-blue-600' : 'bg-slate-100 text-slate-600'}`}>{idx + 1}</span>
+                    {labels[idx]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 print:hidden">
+
+            {/* Step 1: Patient Information Card */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm mb-6 print:hidden">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                <UserIcon />
+                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">1. Clinical Identification & Patient Profile</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 tracking-wider">Patient Name</label>
+                  <input 
+                    type="text" 
+                    value={patientName} 
+                    onChange={e => setPatientName(e.target.value)}
+                    placeholder="Enter patient full name"
+                    className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 tracking-wider">MRN / ID Number</label>
+                  <input 
+                    type="text" 
+                    value={mrn} 
+                    onChange={e => setMrn(e.target.value)}
+                    placeholder="Enter MRN code"
+                    className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 tracking-wider">Age</label>
+                  <input 
+                    type="text" 
+                    value={age} 
+                    onChange={e => setAge(e.target.value)}
+                    placeholder="e.g., 68"
+                    className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 tracking-wider">Sex</label>
+                  <select 
+                    value={sex} 
+                    onChange={e => setSex(e.target.value)}
+                    className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
+                  >
+                    <option value="">Select Sex</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <div className="max-w-md">
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 tracking-wider">Consulting Specialist Name</label>
+                  <input 
+                    type="text" 
+                    value={consultantName} 
+                    onChange={e => setConsultantName(e.target.value)}
+                    placeholder="Enter physician/specialist name"
+                    className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Active tab content switcher */}
+            {activeTab === 'stroke' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                  <div className="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <span className="bg-blue-600 text-white h-7 w-7 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900">Stroke Risk</h2>
+                        <p className="text-xs text-slate-500">CHA₂DS₂-VA Calculator (ESC 2024 Sex-Neutral Standard)</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-emerald-50 text-emerald-800 border border-emerald-100 px-4 py-1.5 rounded-xl text-center flex flex-col items-center">
+                      <span className="text-xl font-black">{chaScore}</span>
+                      <span className="text-[10px] font-bold tracking-wider uppercase">
+                        {chaScore === 0 ? 'NO ROUTINE OAC' : chaScore === 1 ? 'CONSIDER OAC' : 'OAC RECOMMENDED'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {CHA2DS2_VA_ITEMS.map(item => (
+                      <label 
+                        key={item.id} 
+                        className={`flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${
+                          selectedCha.includes(item.id) 
+                            ? 'border-blue-500 bg-blue-50/40 shadow-sm' 
+                            : 'border-slate-100 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedCha.includes(item.id)} 
+                            onChange={() => toggleCha(item.id)}
+                            className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-blue-600 bg-blue-50 h-5 w-7 rounded flex items-center justify-center border border-blue-100">
+                                {item.letter}
+                              </span>
+                              <span className="text-xs md:text-sm font-semibold text-slate-900">{item.label}</span>
+                            </div>
+                            {item.sublabel && <p className="text-xs text-slate-500 ml-9 mt-0.5">{item.sublabel}</p>}
+                          </div>
+                        </div>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          item.points === 2 ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'
+                        }`}>
+                          +{item.points}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                    <button 
+                      onClick={() => setIsSpecialsOpen(!isSpecialsOpen)}
+                      className="w-full flex justify-between items-center p-4 text-left border-b border-slate-200 bg-white"
+                    >
+                      <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                        <AlertIcon className="h-4 w-4 text-amber-500" /> Check before using score (Clinical Overrides)
+                      </span>
+                      {isSpecialsOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                    </button>
+
+                    {isSpecialsOpen && (
+                      <div className="p-4 space-y-2">
+                        <p className="text-[11px] text-slate-500 mb-1">Select any clinical condition present — these bypass standard CHA₂DS₂-VA score-based thresholds:</p>
+                        {SPECIAL_CONDITIONS.map(sc => (
+                          <label 
+                            key={sc.id} 
+                            className={`flex items-start gap-3 p-2.5 rounded-xl border transition cursor-pointer bg-white ${
+                              selectedSpecials.includes(sc.id) 
+                                ? 'border-amber-400 bg-amber-50/30 shadow-sm' 
+                                : 'border-slate-100 hover:bg-slate-50'
+                            }`}
+                          >
+                            <input 
+                              type="checkbox" 
+                              checked={selectedSpecials.includes(sc.id)} 
+                              onChange={() => toggleSpecial(sc.id)}
+                              className="h-4 w-4 rounded text-amber-500 focus:ring-amber-500 border-slate-300 mt-0.5"
+                            />
+                            <div>
+                              <span className="text-xs font-bold text-slate-900">{sc.label}</span>
+                              <p className="text-[10px] text-red-600 font-bold mt-0.5">↳ {sc.alert}</p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="lg:col-span-5 space-y-6">
+                  <div className="bg-blue-600 text-white rounded-3xl p-6 shadow-md flex flex-col justify-between h-full min-h-[300px]">
+                    <div>
+                      <div className="bg-white/10 h-10 w-10 rounded-xl flex items-center justify-center mb-4">
+                        <HeartIcon />
+                      </div>
+                      <h3 className="text-lg font-bold">Assessment Pathway</h3>
+                      <p className="text-xs text-blue-100 mt-2 leading-relaxed font-medium">
+                        Begin the assessment by checking the patient's individual stroke risk parameters. The sex-neutral CHA₂DS₂-VA system allows rapid stratification.
+                      </p>
+                      <p className="text-xs text-blue-200 mt-2 leading-relaxed font-medium">
+                        After documenting stroke metrics, proceed directly to Step 2 to evaluate bleeding risk variables.
+                      </p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setActiveTab('bleeding')}
+                      className="bg-white text-blue-600 font-bold text-xs py-3 px-4 rounded-xl shadow-lg mt-6 hover:bg-blue-50 transition flex items-center justify-center gap-2"
+                    >
+                      Step 2: Bleeding Safety <ArrowRightIcon />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'bleeding' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                  <div className="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <span className="bg-blue-600 text-white h-7 w-7 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900">Bleeding Safety</h2>
+                        <p className="text-xs text-slate-500">HAS-BLED Score</p>
+                      </div>
+                    </div>
+
+                    <div className={`px-4 py-1.5 rounded-xl border text-center flex flex-col items-center ${
+                      hasScore >= 3 ? 'bg-orange-50 border-orange-200 text-orange-800 animate-pulse' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    }`}>
+                      <span className="text-xl font-black">{hasScore}</span>
+                      <span className="text-[10px] font-bold tracking-wider uppercase">
+                        {hasScore >= 3 ? 'HIGH RISK' : 'LOWER RISK'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-xs text-blue-800 flex items-start gap-2.5 mb-4 font-semibold">
+                    <ShieldIcon className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold">Purpose: Identify modifiable bleeding risks — <span className="underline">not to exclude anticoagulation</span>.</p>
+                      <p className="text-blue-700/90 mt-0.5 font-medium">A high score does not justify withholding OAC, but prompts closer surveillance and mitigation of risk factors.</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {HAS_BLED_ITEMS.map(item => (
+                      <label 
+                        key={item.id} 
+                        className={`flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${
+                          selectedHas.includes(item.id) 
+                            ? 'border-blue-500 bg-blue-50/40 shadow-sm' 
+                            : 'border-slate-100 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedHas.includes(item.id)} 
+                            onChange={() => toggleHas(item.id)}
+                            className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-orange-600 bg-orange-50 h-5 w-7 rounded flex items-center justify-center border border-orange-100">
+                                {item.letter}
+                              </span>
+                              <span className="text-xs md:text-sm font-semibold text-slate-900">{item.label}</span>
+                            </div>
+                            {item.sublabel && <p className="text-xs text-slate-500 ml-9 mt-0.5">{item.sublabel}</p>}
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
+                          +{item.points}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* HAS-BLED Meter Progress Scale - Matching image_eba08c.png */}
+                  <div className="mt-6 pt-4 border-t border-slate-100">
+                    <div className="flex gap-1.5 h-2.5">
+                      {[...Array(9)].map((_, i) => {
+                        const active = hasScore > i;
+                        return (
+                          <div 
+                            key={i} 
+                            className={`flex-1 rounded-sm transition-colors duration-300 ${
+                              active 
+                                ? hasScore >= 3 ? 'bg-red-500' : 'bg-emerald-500' 
+                                : 'bg-slate-200'
+                            }`} 
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 mt-2">
+                      <span>0</span>
+                      <span className={`px-2 py-0.5 rounded ${hasScore >= 3 ? 'text-red-700 bg-red-50 font-black border border-red-100 animate-pulse' : ''}`}>
+                        ≥ 3 = review factors
+                      </span>
+                      <span>9</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Collapsible Educational Reference List - Matching image_eba08c.png */}
+                <div className="lg:col-span-5 space-y-6">
+                  
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                    <button 
+                      onClick={() => setIsModifiableOpen(!isModifiableOpen)}
+                      className="w-full flex justify-between items-center text-left"
+                    >
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500"></span> Modifiable Bleeding Risk Factors
+                      </span>
+                      {isModifiableOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                    </button>
+
+                    {isModifiableOpen && (
+                      <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                        <div className="space-y-1.5">
+                          {MODIFIABLE_BLEEDING_RISKS.map((item, idx) => (
+                            <div 
+                              key={idx} 
+                              className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50"
+                            >
+                              <span className="text-emerald-500 font-bold text-xs">✓</span>
+                              <span className="text-xs font-semibold text-slate-800">{item.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {hasScore >= 3 && (
+                    <div className="bg-red-50 border border-red-100 text-red-950 rounded-2xl p-4 text-xs font-semibold space-y-2">
+                      <div className="flex items-center gap-1.5 text-red-800 font-bold">
+                        <AlertIcon className="h-4.5 w-4.5" />
+                        <span>Risk Review Mandated (HAS-BLED ≥ 3)</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed opacity-90">
+                        This patient is classified under high baseline bleeding risk. Active action must be taken to address each flagged modifiable factor in the clinical workflow. Do not withhold OAC based solely on this score.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-blue-900">Next Strategy Phase</h4>
+                      <p className="text-[10px] text-blue-700">Map selections onto final guideline choices.</p>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('strategy')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-xl transition shadow-md"
+                    >
+                      <ArrowRightIcon />
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'strategy' && (
+              <div className="space-y-6">
+
+                {/* Single Option Patient Priorities - Moved above treatment choices */}
+                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-1">
+                    What matters most to the patient?
+                  </h3>
+                  <p className="text-xs text-slate-500 mb-4 font-semibold">Select the single key preference driving the patient's lifestyle choice.</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {PATIENT_PRIORITIES.map(priority => {
+                      const isChecked = selectedPriority === priority.id;
+                      return (
+                        <div 
+                          key={priority.id}
+                          onClick={() => handlePrioritySelect(priority.id)}
+                          className={`p-4 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between h-24 ${
+                            isChecked ? `${priority.color} ring-2` : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
+                          }`}
+                        >
+                          <span className="text-xs font-bold leading-tight flex items-center gap-1.5">
+                            <span className={`h-4.5 w-4.5 rounded-full border flex items-center justify-center shrink-0 ${isChecked ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300 bg-white'}`}>
+                              {isChecked && <span className="h-1.5 w-1.5 bg-white rounded-full"></span>}
+                            </span>
+                            "{priority.text}"
+                          </span>
+                          <span className="text-[10px] block opacity-85 ml-6 font-semibold">{priority.sub}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* 3 Anticoagulation Strategy Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  
+                  {/* NOAC / DOAC Card */}
+                  <div 
+                    onClick={() => setSelectedTreatmentType('noac')}
+                    className={`bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md cursor-pointer transition flex flex-col justify-between relative ${
+                      selectedTreatmentType === 'noac' ? 'ring-2 ring-emerald-500 border-emerald-500' : 'border-slate-200'
+                    } ${recommendedType === 'noac' ? 'ring-4 ring-blue-500/30' : ''}`}
+                  >
+                    {recommendedType === 'noac' && (
+                      <div className="absolute -top-3 left-4 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                        Recommended for this patient
+                      </div>
+                    )}
+                    {selectedTreatmentType === 'noac' && (
+                      <div className="absolute top-4 right-4 bg-emerald-500 text-white rounded-full p-1">
+                        <CheckIcon />
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-base font-bold text-slate-900">NOAC / DOAC</h3>
+                        <span className="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">
+                          Default choice — most non-valvular AF
+                        </span>
+                      </div>
+
+                      <ul className="text-xs space-y-2 text-slate-700 font-semibold mt-4">
+                        <li className="flex items-center gap-1.5 text-emerald-700"><span className="text-emerald-500 font-bold">✓</span> No mechanical heart valve</li>
+                        <li className="flex items-center gap-1.5 text-emerald-700"><span className="text-emerald-500 font-bold">✓</span> No moderate/severe rheumatic MS</li>
+                        <li className="flex items-center gap-1.5 text-emerald-700"><span className="text-emerald-500 font-bold">✓</span> Renal function suitable (CrCl ≥ 15)</li>
+                        <li className="flex items-center gap-1.5 text-emerald-700"><span className="text-emerald-500 font-bold">✓</span> Patient prefers convenience / no INR tests</li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-100">
+                      <div className="grid grid-cols-2 gap-1.5 mb-3">
+                        {['Apixaban', 'Rivaroxaban', 'Dabigatran', 'Edoxaban'].map(drug => (
+                          <button
+                            key={drug}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTreatmentType('noac');
+                              setSelectedNoacDrug(drug);
+                            }}
+                            className={`py-1.5 px-2 rounded text-[11px] font-bold transition border ${
+                              selectedTreatmentType === 'noac' && selectedNoacDrug === drug
+                                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {drug}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="text-[11px] text-emerald-600 font-bold uppercase tracking-wide mt-2">Class I, Level A — ESC 2024</div>
+                    </div>
+                  </div>
+
+                  {/* Warfarin Card */}
+                  <div 
+                    onClick={() => setSelectedTreatmentType('warfarin')}
+                    className={`bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md cursor-pointer transition flex flex-col justify-between relative ${
+                      selectedTreatmentType === 'warfarin' ? 'ring-2 ring-blue-500 border-blue-500' : 'border-slate-200'
+                    } ${recommendedType === 'warfarin' ? 'ring-4 ring-blue-500/30' : ''}`}
+                  >
+                    {recommendedType === 'warfarin' && (
+                      <div className="absolute -top-3 left-4 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                        Recommended for this patient
+                      </div>
+                    )}
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-base font-bold text-slate-900">Warfarin (VKA)</h3>
+                        <span className="text-[11px] bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">
+                          Specific indications
+                        </span>
+                      </div>
+
+                      <ul className="text-xs space-y-2 text-slate-700 font-semibold mt-4">
+                        <li className="flex items-center gap-1.5 text-blue-700"><span className="text-blue-500 font-bold">✓</span> Mechanical heart valve</li>
+                        <li className="flex items-center gap-1.5 text-blue-700"><span className="text-blue-500 font-bold">✓</span> Moderate/severe rheumatic mitral stenosis</li>
+                        <li className="flex items-center gap-1.5 text-blue-700"><span className="text-blue-500 font-bold">✓</span> NOAC not suitable or available</li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-100 text-left">
+                      <div className="text-[11px] font-bold text-slate-500">
+                        Target INR 2.0–3.0 • TTR ≥ 70%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* LAA Occlusion Card */}
+                  <div 
+                    onClick={() => setSelectedTreatmentType('laao')}
+                    className={`bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md cursor-pointer transition flex flex-col justify-between relative ${
+                      selectedTreatmentType === 'laao' ? 'ring-2 ring-purple-500 border-purple-500' : 'border-slate-200'
+                    } ${recommendedType === 'laao' ? 'ring-4 ring-blue-500/30' : ''}`}
+                  >
+                    {recommendedType === 'laao' && (
+                      <div className="absolute -top-3 left-4 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                        Recommended for this patient
+                      </div>
+                    )}
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-base font-bold text-slate-900">LAA Occlusion</h3>
+                        <span className="text-[11px] bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">
+                          Select patients only
+                        </span>
+                      </div>
+
+                      <ul className="text-xs space-y-2 text-slate-700 font-semibold mt-4">
+                        <li className="flex items-center gap-1.5 text-purple-700"><span className="text-purple-500 font-bold">✓</span> Stroke prevention needed</li>
+                        <li className="flex items-center gap-1.5 text-purple-700"><span className="text-purple-500 font-bold">✓</span> Long-term anticoagulation genuinely unsuitable</li>
+                        <li className="flex items-center gap-1.5 text-purple-700"><span className="text-purple-500 font-bold">✓</span> Major or recurrent bleeding on anticoagulation</li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-100 text-left">
+                      <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
+                        Does NOT replace warfarin in mechanical valve patients • Requires Heart Team
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Collapsible Renal Accordion - Matching image_ec11bc.png */}
+                {selectedTreatmentType === 'noac' && (
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                    <button 
+                      onClick={() => setIsRenalAccordionOpen(!isRenalAccordionOpen)}
+                      className="w-full flex justify-between items-center text-left"
+                    >
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                        NOAC — Renal Function Check
+                      </span>
+                      {isRenalAccordionOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                    </button>
+
+                    {isRenalAccordionOpen && (
+                      <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div 
+                          onClick={() => { setSelectedRenalCheck('standard'); setSelectedTreatmentType('noac'); }}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between h-20 ${
+                            selectedRenalCheck === 'standard' 
+                              ? 'border-blue-500 bg-blue-50/20 text-blue-900' 
+                              : 'border-slate-100 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">CrCl ≥ 50</span>
+                          <span className="text-[10px] text-slate-500 font-medium">Standard dose</span>
+                        </div>
+
+                        <div 
+                          onClick={() => { setSelectedRenalCheck('adjust'); setSelectedTreatmentType('noac'); }}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between h-20 ${
+                            selectedRenalCheck === 'adjust' 
+                              ? 'border-blue-500 bg-blue-50/20 text-blue-900' 
+                              : 'border-slate-100 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">CrCl 15–49</span>
+                          <span className="text-[10px] text-slate-500 font-medium">Dose adjust per DOAC</span>
+                        </div>
+
+                        <div 
+                          onClick={() => { setSelectedRenalCheck('contraindicated'); setSelectedTreatmentType('noac'); }}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition flex flex-col justify-between h-20 ${
+                            selectedRenalCheck === 'contraindicated' 
+                              ? 'border-red-500 bg-red-50/20 text-red-900' 
+                              : 'border-slate-100 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">CrCl &lt; 15 / dialysis</span>
+                          <span className="text-[10px] text-red-600 font-bold">Specialist · consider VKA</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Dynamic Real-time Decision Summary */}
+                <div className="bg-blue-600 text-white rounded-3xl overflow-hidden shadow-lg border border-blue-700">
+                  <div className="px-6 py-4 border-b border-blue-500 bg-blue-700/50 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ShieldIcon className="h-5 w-5" />
+                      <div>
+                        <h3 className="text-sm font-bold">AF Anticoagulation Decision Summary</h3>
+                        <span className="text-[10px] text-blue-200 font-semibold font-mono">Auto-generated • ESC Guidelines</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] bg-blue-800 text-white px-2.5 py-1 rounded font-bold font-mono uppercase tracking-wider">
+                        {selectedTreatmentType === 'noac' ? 'DOAC Pathway' : selectedTreatmentType === 'warfarin' ? 'VKA Pathway' : selectedTreatmentType === 'laao' ? 'LAAO Intervention' : 'No OAC Plan'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    <div className="bg-white text-slate-900 rounded-2xl p-4 border border-blue-100">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Prescribed Strategy</span>
+                      <p className="text-base font-extrabold text-blue-600">
+                        {selectedTreatmentType === 'noac' && `NOAC: ${selectedNoacDrug} (Renal: ${selectedRenalCheck === 'standard' ? 'CrCl ≥ 50' : selectedRenalCheck === 'adjust' ? 'CrCl 15-49' : 'CrCl < 15 / Dialysis'})`}
+                        {selectedTreatmentType === 'warfarin' && `Vitamin K Antagonist (Warfarin)`}
+                        {selectedTreatmentType === 'laao' && `Left Atrial Appendage Occlusion`}
+                        {selectedTreatmentType === 'none' && `No routine anticoagulation therapy planned`}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-2 font-semibold leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                        {computedClinicalRationale}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <span className="block text-blue-200 font-bold uppercase text-[9px]">Decision parameters</span>
+                        <div className="flex flex-wrap gap-2 mt-1.5 font-bold">
+                          <span className="bg-blue-700 px-2.5 py-1 rounded-lg">CHA₂DS₂-VA = {chaScore}</span>
+                          <span className="bg-blue-700 px-2.5 py-1 rounded-lg">HAS-BLED = {hasScore}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="block text-blue-200 font-bold uppercase text-[9px]">Patient Preference Alignment</span>
+                        <p className="text-[11px] text-blue-100 mt-1.5 italic font-bold">
+                          "{selectedPriority ? PATIENT_PRIORITIES.find(pr => pr.id === selectedPriority)?.text : 'None registered'}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button 
+                    onClick={() => setActiveTab('documentation')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition shadow-md flex items-center gap-2"
+                  >
+                    Proceed to Documentation Summary <ArrowRightIcon />
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'documentation' && (
+              <div className="space-y-6">
+                
+                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                  <div className="border-b border-slate-100 pb-4 mb-4">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Clinical Report Center</h3>
+                    <p className="text-xs text-slate-500">Auto-populated clinical reports from the selections made. Ready for outpatient record entry.</p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 border border-slate-150 text-xs">
+                    <div>
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">Patient Name</span>
+                      <span className="font-bold text-slate-800">{patientName || 'Not entered'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">MRN / ID</span>
+                      <span className="font-bold text-slate-800 font-mono">{mrn || 'Not entered'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">Age & Sex</span>
+                      <span className="font-bold text-slate-800">{age ? `${age} yrs` : 'N/A'} {sex ? `/ ${sex}` : ''}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">Consulting Specialist</span>
+                      <span className="font-bold text-blue-700">{consultantName || 'Not entered'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generate Dual Reports Buttons - Matching image_eac785.png */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                      <div className="bg-emerald-50 text-emerald-600 h-11 w-11 rounded-xl flex items-center justify-center mb-4">
+                        <UserIcon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-950">Patient Consultation Summary</h3>
+                      <p className="text-xs text-slate-400 font-semibold mb-1 mt-0.5">Patient-friendly • A4 format • Clear language</p>
+                      <ul className="text-xs text-slate-500 mt-4 space-y-2.5 font-semibold">
+                        <li className="flex items-center gap-1.5 text-emerald-800"><span className="text-emerald-500 font-bold">✓</span> Stroke & bleeding risk in plain language</li>
+                        <li className="flex items-center gap-1.5 text-emerald-800"><span className="text-emerald-500 font-bold">✓</span> Explanation of discussed options</li>
+                        <li className="flex items-center gap-1.5 text-emerald-800"><span className="text-emerald-500 font-bold">✓</span> Recommended plan and priority alignments</li>
+                      </ul>
+                    </div>
+
+                    <button 
+                      onClick={() => setShowPatientSummary(true)}
+                      className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3.5 rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                      <DocIcon className="h-4 w-4" /> Generate Patient Summary
+                    </button>
+                  </div>
+
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                      <div className="bg-blue-50 text-blue-600 h-11 w-11 rounded-xl flex items-center justify-center mb-4">
+                        <DocIcon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-950">Physician Documentation Summary</h3>
+                      <p className="text-xs text-slate-400 font-semibold mb-1 mt-0.5">Clinical record style • Structured metrics • Medical data only</p>
+                      <ul className="text-xs text-slate-500 mt-4 space-y-2.5 font-semibold">
+                        <li className="flex items-center gap-1.5 text-blue-800"><span className="text-blue-500 font-bold">✓</span> Scores matrix & selected items</li>
+                        <li className="flex items-center gap-1.5 text-blue-800"><span className="text-blue-500 font-bold">✓</span> Active special override checklist parameters</li>
+                        <li className="flex items-center gap-1.5 text-blue-800"><span className="text-blue-500 font-bold">✓</span> Dynamic medical rationales and signature block</li>
+                      </ul>
+                    </div>
+
+                    <button 
+                      onClick={() => setShowPhysicianReport(true)}
+                      className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3.5 rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                      <DocIcon className="h-4 w-4" /> Generate Physician Summary
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+          </main>
+
+          {}
+          {/* ====================================================================== */}
+          {/* 1. PATIENT SUMMARY REPORT MODAL                                        */}
+          {/* ====================================================================== */}
+          {showPatientSummary && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-center items-start overflow-y-auto p-4 md:p-10">
+              <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden my-4">
+                
+                <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 print-hide">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-500/30">
+                      Patient Summary Note
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">Clear Language • Print Optimized</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={triggerPrint}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
+                    >
+                      <PrintIcon /> Print Document
+                    </button>
+                    <button 
+                      onClick={() => setShowPatientSummary(false)}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-2 rounded-lg transition"
+                    >
+                      <CloseIcon />
+                    </button>
+                  </div>
+                </div>
+
+                <div id="print-area-patient" className="p-10 md:p-14 bg-white text-slate-900 leading-relaxed font-sans">
+                  
+                  <div className="flex justify-between items-start border-b-2 border-slate-950 pb-5 mb-6">
+                    <div>
+                      <div className="text-xs font-black tracking-wider uppercase text-slate-800">AS-SALAM INTERNATIONAL HOSPITAL</div>
+                      <div className="text-[10px] font-bold text-slate-500">CARDIOLOGY OUTPATIENT CLINIC</div>
+                      <h1 className="text-xl font-black text-slate-950 mt-1 uppercase">Atrial Fibrillation Stroke Prevention Plan</h1>
+                    </div>
+                    <div className="text-right text-xs">
+                      <span className="text-[9px] font-bold bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-slate-800">
+                        Patient Consultation Copy
+                      </span>
+                      <p className="text-[10px] text-slate-500 mt-2 font-bold">Date: {new Date().toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 border border-slate-200 rounded-xl overflow-hidden text-xs mb-6 bg-slate-50/50">
+                    <div className="p-3 border-r border-b border-slate-200">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Patient Name</span>
+                      <span className="font-bold text-slate-800 text-sm">{patientName || 'N/A'}</span>
+                    </div>
+                    <div className="p-3 border-b border-slate-200">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Medical Record Number (MRN)</span>
+                      <span className="font-bold text-slate-800 font-mono text-sm">{mrn || 'N/A'}</span>
+                    </div>
+                    <div className="p-3 border-r border-slate-200">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Age / Sex</span>
+                      <span className="font-bold text-slate-800">{age ? `${age} Years` : 'N/A'} {sex ? `/ ${sex}` : ''}</span>
+                    </div>
+                    <div className="p-3">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Consulting Specialist</span>
+                      <span className="font-bold text-blue-700">{consultantName || 'Treating Physician'}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="border border-slate-200 rounded-xl p-4">
+                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Stroke Protection Status</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="h-6 w-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs">{chaScore}</span>
+                        <span className="text-xs font-bold text-slate-800">
+                          {chaScore === 0 ? 'Minimal baseline risk' : chaScore === 1 ? 'Intermediate risk profile' : 'Elevated risk profile'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-2 leading-relaxed font-semibold">
+                        Atrial fibrillation can allow tiny blood clots to form in the heart. Protection strategies are designed to safely reduce this hazard.
+                      </p>
+                    </div>
+
+                    <div className="border border-slate-200 rounded-xl p-4">
+                      <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Bleeding Safety Status</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="h-6 w-6 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs">{hasScore}</span>
+                        <span className="text-xs font-bold text-slate-800">
+                          {hasScore >= 3 ? 'High risk baseline (close follow-up needed)' : 'Standard baseline risk profile'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-2 leading-relaxed font-semibold">
+                        Your medical team reviews and monitors parameters periodically to keep bleeding risks minimized.
+                      </p>
+                    </div>
+                  </div>
+
+                  {selectedPriority && (
+                    <div className="border border-emerald-100 bg-emerald-50/20 rounded-xl p-4 mb-6">
+                      <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-wider mb-1">Honored Treatment Goal</h3>
+                      <p className="text-xs text-emerald-900 font-semibold italic">
+                        "{PATIENT_PRIORITIES.find(p => p.id === selectedPriority)?.text}" — {PATIENT_PRIORITIES.find(p => p.id === selectedPriority)?.sub}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="border-2 border-slate-900 rounded-xl p-5 mb-6">
+                    <h3 className="text-xs font-black uppercase text-slate-900 tracking-wider border-b border-slate-100 pb-2 mb-2">Selected Protective Strategy</h3>
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <span className="block text-[9px] font-bold text-slate-400 uppercase">Treatment Option:</span>
+                        <strong className="text-slate-950 text-sm">
+                          {selectedTreatmentType === 'noac' && `NOAC: ${selectedNoacDrug} (Renal strategy: ${selectedRenalCheck === 'standard' ? 'Standard Dose' : selectedRenalCheck === 'adjust' ? 'Dose Adjusted' : 'Contraindicated'})`}
+                          {selectedTreatmentType === 'warfarin' && `Vitamin K Antagonist (Warfarin)`}
+                          {selectedTreatmentType === 'laao' && `Left Atrial Appendage Occlusion`}
+                          {selectedTreatmentType === 'none' && `Monitoring & Routine Reviews`}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="block text-[9px] font-bold text-slate-400 uppercase">Clinical Reason:</span>
+                        <p className="text-slate-700 mt-0.5 leading-relaxed font-semibold italic">
+                          {computedClinicalRationale}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border border-slate-200 rounded-xl p-4 mb-6 text-xs">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Patient Guidance & Warning Flags</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <strong className="text-slate-800 block">How to take your medication:</strong>
+                        <p className="text-slate-600 mt-0.5 leading-relaxed font-semibold">
+                          Take exactly as directed by your physician. Never miss a dose, and do not stop treatment without consulting your cardiologist.
+                        </p>
+                      </div>
+                      <div>
+                        <strong className="text-red-700 block">⚠️ Warning Signs (Contact Clinic Immediately):</strong>
+                        <ul className="text-red-800 list-disc list-inside mt-1 font-semibold">
+                          <li>Sudden severe headache</li>
+                          <li>Unexplained bruising or bleeding</li>
+                          <li>Chest pain or shortness of breath</li>
+                          <li>Signs of stroke (FAST)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-6 flex justify-between items-end mt-10">
+                    <div className="text-[9px] text-slate-400 font-semibold">
+                      <p>As-Salam International Hospital Outpatient Cardiology Unit</p>
+                      <p>Reference: Shared Decision-Making AF Protocol</p>
+                    </div>
+                    <div className="text-right text-xs">
+                      <div className="h-8 border-b border-slate-400 w-44 mb-1"></div>
+                      <p className="font-bold text-slate-900">{consultantName || 'Treating Cardiologist'}</p>
+                      <p className="text-slate-500 text-[10px] font-semibold">Outpatient Cardiology Unit</p>
+                    </div>
+                  </div>
+
+                  {/* Explicit PDF Export Button for the Bottom */}
+                  <div className="mt-8 pt-4 border-t border-slate-100 flex justify-center print:hidden">
+                    <button 
+                      onClick={() => window.print()}
+                      className="bg-slate-900 text-white font-bold py-2 px-6 rounded-full text-xs shadow-lg flex items-center gap-2 hover:bg-slate-800"
+                    >
+                      <DocIcon /> Save as PDF / Print
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ====================================================================== */}
+          {/* 2. PHYSICIAN DOCUMENTATION REPORT MODAL                                 */}
+          {/* ====================================================================== */}
+          {showPhysicianReport && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-center items-start overflow-y-auto p-4 md:p-10">
+              <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden my-4">
+                
+                <div className="bg-slate-950 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 print-hide">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-blue-500/20 text-blue-400 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-500/30">
+                      Physician Summary Note
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">Clinical Record • Medical Data Only</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={triggerPrint}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5"
+                    >
+                      <PrintIcon /> Print Report
+                    </button>
+                    <button 
+                      onClick={() => setShowPhysicianReport(false)}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-2 rounded-lg transition"
+                    >
+                      <CloseIcon />
+                    </button>
+                  </div>
+                </div>
+
+                <div id="print-area-physician" className="p-10 md:p-14 bg-white text-slate-900 leading-normal font-sans">
+                  
+                  <div className="flex justify-between items-start border-b-2 border-slate-950 pb-4 mb-4">
+                    <div>
+                      <div className="text-xs font-black tracking-widest text-slate-900 uppercase">AS-SALAM INTERNATIONAL HOSPITAL</div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">CARDIOLOGY DEPARTMENT | OUTPATIENT MEDICAL RECORD</div>
+                      <h1 className="text-base font-black text-slate-950 mt-1 uppercase">
+                        AF Anticoagulation Strategy Note
+                      </h1>
+                    </div>
+                    <div className="text-right text-xs">
+                      <span className="text-[10px] font-black uppercase text-slate-800 border border-slate-800 px-2 py-0.5 tracking-wider rounded">
+                        Clinical Session Record
+                      </span>
+                      <p className="text-[10px] text-slate-500 mt-1.5 font-bold">Date: {new Date().toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 border border-slate-300 rounded-lg overflow-hidden text-xs mb-5 bg-slate-50/50">
+                    <div className="bg-slate-100 p-2 border-r border-b border-slate-300 font-bold text-[10px] uppercase text-slate-600">Patient Name</div>
+                    <div className="p-2 border-b border-r border-slate-300 font-bold text-slate-850">{patientName || 'N/A'}</div>
+                    <div className="bg-slate-100 p-2 border-r border-b border-slate-300 font-bold text-[10px] uppercase text-slate-600">MRN</div>
+                    <div className="p-2 border-b border-slate-300 font-mono font-bold text-slate-900">{mrn || 'N/A'}</div>
+                    
+                    <div className="bg-slate-100 p-2 border-r border-slate-300 font-bold text-[10px] uppercase text-slate-600">Age / Sex</div>
+                    <div className="p-2 border-r border-slate-300 font-semibold text-slate-800">{age ? `${age} Yrs` : 'N/A'} {sex ? `/ ${sex}` : ''}</div>
+                    <div className="bg-slate-100 p-2 border-r border-slate-300 font-bold text-[10px] uppercase text-slate-600">Consultant</div>
+                    <div className="p-2 font-bold text-blue-900">{consultantName || 'N/A'}</div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-5">
+                    
+                    <div className="border border-slate-300 rounded-lg p-3 bg-slate-50">
+                      <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider">Thromboembolic Risk Profile</span>
+                      <div className="flex items-baseline gap-1.5 mt-1">
+                        <span className="text-sm font-black text-slate-900">CHA₂DS₂-VA Score: {chaScore}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1 font-bold">
+                        {chaScore === 0 && 'Low Risk Category (OAC not routinely recommended)'}
+                        {chaScore === 1 && 'Intermediate Risk Category (OAC class IIa recommendation)'}
+                        {chaScore >= 2 && 'High Risk Category (OAC class I strong recommendation)'}
+                      </p>
+                    </div>
+
+                    <div className="border border-slate-300 rounded-lg p-3 bg-slate-50">
+                      <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider">Bleeding Hazard Profile</span>
+                      <div className="flex items-baseline gap-1.5 mt-1">
+                        <span className="text-sm font-black text-slate-900">HAS-BLED Score: {hasScore}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1 font-bold">
+                        {hasScore >= 3 ? 'High bleeding risk (Review of modifiable factors mandatory)' : 'Acceptable baseline hazard'}
+                      </p>
+                    </div>
+
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-5 text-[11px]">
+                    
+                    <div className="border border-slate-200 rounded-lg p-3">
+                      <div className="font-bold border-b border-slate-200 pb-1 mb-1.5 uppercase text-slate-400 tracking-wider text-[9px]">Documented Thromboembolic Indicators</div>
+                      {selectedCha.length === 0 ? (
+                        <p className="text-slate-400 italic text-[10px] font-semibold">No parameters checked (0 points)</p>
+                      ) : (
+                        <ul className="space-y-1">
+                          {selectedCha.map(c => {
+                            const itm = CHA2DS2_VA_ITEMS.find(i => i.id === c);
+                            return (
+                              <li key={c} className="flex items-center gap-1.5 text-slate-800 font-semibold">
+                                <span className="h-1.5 w-1.5 bg-blue-600 rounded-full shrink-0"></span>
+                                <span>{itm?.label} (+{itm?.points})</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="border border-slate-200 rounded-lg p-3">
+                      <div className="font-bold border-b border-slate-200 pb-1 mb-1.5 uppercase text-slate-400 tracking-wider text-[9px]">Documented Bleeding Risk Indicators</div>
+                      {selectedHas.length === 0 ? (
+                        <p className="text-slate-400 italic text-[10px] font-semibold">No parameters checked (0 points)</p>
+                      ) : (
+                        <ul className="space-y-1">
+                          {selectedHas.map(h => {
+                            const itm = HAS_BLED_ITEMS.find(i => i.id === h);
+                            return (
+                              <li key={h} className="flex items-center gap-1.5 text-slate-800 font-semibold">
+                                <span className="h-1.5 w-1.5 bg-orange-600 rounded-full shrink-0"></span>
+                                <span>{itm?.label} (+1)</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+
+                  </div>
+
+                  {selectedSpecials.length > 0 && (
+                    <div className="border border-amber-300 bg-amber-50/20 rounded-lg p-3 mb-5 text-[11px]">
+                      <div className="font-bold text-amber-900 uppercase tracking-wider text-[9px] mb-1.5 flex items-center gap-1">
+                        <AlertIcon className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        Absolute Special Override Conditions Identified
+                      </div>
+                      <ul className="space-y-1 text-slate-850 font-bold">
+                        {selectedSpecials.map(s => {
+                          const sc = SPECIAL_CONDITIONS.find(item => item.id === s);
+                          return (
+                            <li key={s} className="flex items-start gap-1">
+                              <CheckIcon className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                              <span><strong>{sc?.label}</strong> — <span className="text-red-700 italic">{sc?.alert}</span></span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="border-2 border-slate-900 rounded-lg p-4 mb-5 text-xs">
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-2">
+                      <span className="font-black uppercase tracking-wider text-[10px] text-slate-900">Anticoagulation Plan Details</span>
+                      <span className="text-xs font-bold text-slate-950 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded uppercase">
+                        Pathway: {selectedTreatmentType === 'noac' ? `${selectedNoacDrug} (Renal: ${selectedRenalCheck === 'standard' ? 'CrCl ≥ 50' : selectedRenalCheck === 'adjust' ? 'CrCl 15-49' : 'CrCl < 15 / Dialysis'})` : selectedTreatmentType.toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div>
+                        <span className="block text-[9px] font-bold text-slate-400 uppercase">Physician Clinical Rationale:</span>
+                        <p className="text-slate-700 font-bold leading-relaxed mt-0.5 italic">
+                          {computedClinicalRationale}
+                        </p>
+                      </div>
+
+                      {selectedPriority && (
+                        <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase shrink-0">Patient Care Preference:</span>
+                          <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold text-slate-800">
+                            "{PATIENT_PRIORITIES.find(p => p.id === selectedPriority)?.text}"
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-400 pt-5 flex justify-between items-end">
+                    <div className="text-[9px] text-slate-400 font-semibold">
+                      <p>Document compiled via: Outpatient Cardiovascular Decision Support Engine</p>
+                      <p>Software Standard: ESC-AF-2024-v1.9</p>
+                    </div>
+                    <div className="text-right text-xs">
+                      <div className="h-8 border-b border-slate-400 w-48 mb-1"></div>
+                      <p className="font-black text-slate-900">{consultantName || 'Treating Specialist Signature'}</p>
+                      <p className="text-slate-500 text-[10px] font-semibold">MD, Cardiologist Outpatient Unit</p>
+                    </div>
+                  </div>
+
+                  {/* Added explicit PDF Export Button for the Bottom of Physician Report */}
+                  <div className="mt-8 pt-4 border-t border-slate-100 flex justify-center print:hidden">
+                    <button 
+                      onClick={() => window.print()}
+                      className="bg-slate-900 text-white font-bold py-2 px-6 rounded-full text-xs shadow-lg flex items-center gap-2 hover:bg-slate-800"
+                    >
+                      <DocIcon /> Save as PDF / Print
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+</body>
+</html>
